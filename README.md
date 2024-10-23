@@ -13,27 +13,37 @@ Data Scraping from Wiki using Reticulate    |  Lollipop Chart on Life Expectancy
 In this course, we explore the use of R programming to construct data visualizations. The course follows <a href="https://socviz.co/"> Data Visualization: A Practical Introduction </a> by Kieran Healy and the course introduction can be found here [<a href="https://nicholas-sim.github.io/ANL501-Data-Visualisation-and-Storytelling/seminar_1/"> Seminar 1 </a>].
 
 
-Singapore HDB Resale Market Trend From 1990 to the Present
-Author: Sally Marcellina Yeo
-Date: r format(Sys.time(), '%d %B %Y')
+# Singapore HDB Resale Market Trend From 1990 to the Present
 
-Overview
-This project analyzes the Singapore HDB resale market trends from 1990 to the present. The analysis uses a range of data visualization techniques to provide insights into how various factors influence the market, such as:
+**Author**: Sally Marcellina Yeo  
+**Date**: `r format(Sys.time(), '%d %B %Y')`
 
-Flat types
-Location
-Remaining lease years
-Regulatory measures
-Economic factors (e.g., interest rates)
-The report highlights how significant economic events (like the 1998 Asian Financial Crisis and the 2007 Global Financial Crisis) and government interventions impacted HDB resale prices.
+## Overview
 
-Key Features
-Line Plots: Visualize the time-series data for average prices per square foot (psf) across different time periods.
-Bar Charts: Show transaction volumes over time to reflect market activity.
-Scatter Plots: Analyze the correlation between average psf prices and factors such as remaining lease years and flat types.
-Map Plots: Present the average psf prices geographically across different towns in Singapore.
-Insights
-Economic Impact: Regulatory measures and economic variables like interest rates have a strong influence on the resale HDB market.
-Price Determinants: Flat type, age, and location significantly affect the resale prices.
-Government Measures: Government interventions during key financial crises played a critical role in stabilizing prices.
+This project analyzes the Singapore HDB resale market trends from 1990 to the present. The analysis uses various data visualization techniques to provide insights into key factors influencing the market, such as:
 
+- Flat types
+- Location
+- Remaining lease years
+- Regulatory measures
+- Economic factors (e.g., interest rates)
+
+The report also examines how significant economic events, such as the 1998 Asian Financial Crisis and the 2007 Global Financial Crisis, along with government interventions, impacted HDB resale prices.
+
+## Key Features
+
+- **Line Plots**: Visualize the time-series data for average prices per square foot (psf) across different periods.
+- **Bar Charts**: Show transaction volumes over time to reflect market activity.
+- **Scatter Plots**: Analyze the correlation between average psf prices and factors such as remaining lease years, flat types, and location.
+- **Map Plots**: Present the average psf prices geographically across different towns in Singapore.
+
+## Insights
+
+- **Economic Impact**: Regulatory measures and economic factors like interest rates significantly influence the HDB resale market.
+- **Price Determinants**: Flat type, age, and location have a strong impact on resale prices.
+- **Government Measures**: Government interventions during financial crises helped stabilize the market.
+
+## Project Structure
+
+- **RMarkdown File**: The analysis is contained in the file `ANL501_ECA_Sallyyeo001_SallyMarcellinaYeo.Rmd`, which can be used to generate a Word document report.
+- **Data Visualizations**: Includes a variety of plots (line plots, bar charts, scatter plots, map plots) to explore and understand market trends.
