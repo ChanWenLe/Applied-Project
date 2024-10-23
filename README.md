@@ -4,12 +4,6 @@
 
 This repository contains the visualization of data that I have done for ANL501 Data Visualisation and Storytelling course offered by the Master of Analytics and Visualisation (MAVI) programme at SUSS.
 
-
-Data Scraping from Wiki using Reticulate    |  Lollipop Chart on Life Expectancy
-:-------------------------:|:-------------------------:
-![](islands.png) |   ![](lifeexpectancy.png)
-
-
 In this course, we explore the use of R programming to construct data visualizations. The course follows <a href="https://socviz.co/"> Data Visualization: A Practical Introduction </a> by Kieran Healy and the course introduction can be found here [<a href="https://nicholas-sim.github.io/ANL501-Data-Visualisation-and-Storytelling/seminar_1/"> Seminar 1 </a>].
 
 
