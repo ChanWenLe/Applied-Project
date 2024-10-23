@@ -4,7 +4,7 @@
 
 This repository contains the visualization of data that I have done for ANL501 Data Visualisation and Storytelling course offered by the Master of Analytics and Visualisation (MAVI) programme at SUSS.
 
-In this course, we explore the use of R programming to construct data visualizations. The course follows <a href="https://socviz.co/"> Data Visualization: A Practical Introduction </a> by Kieran Healy and the course introduction can be found here [<a href="https://nicholas-sim.github.io/ANL501-Data-Visualisation-and-Storytelling/seminar_1/"> Seminar 1 </a>].
+In this course, we explore the use of R programming to construct data visualizations. The course follows <a href="https://socviz.co/"> Data Visualization: A Practical Introduction </a> by Kieran Healy.
 
 
 # Singapore HDB Resale Market Trend From 1990 to the Present
@@ -40,13 +40,3 @@ The report also examines how significant economic events, such as the 1998 Asian
 
 - **RMarkdown File**: The analysis is contained in the file `ANL501_ECA_Sallyyeo001_SallyMarcellinaYeo.Rmd`, which can be used to generate a Word document report.
 - **Data Visualizations**: Includes a variety of plots (line plots, bar charts, scatter plots, map plots) to explore and understand market trends.
-
-## Getting Started
-
-### Prerequisites
-
-Make sure you have the following R packages installed:
-
-```r
-install.packages(c("skimr", "stringr", "zoo", "tidyverse", "patchwork", "leaflet", "ggplot2", "dplyr", "sf"))
-
