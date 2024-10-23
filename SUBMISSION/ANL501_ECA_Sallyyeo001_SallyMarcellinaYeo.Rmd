@@ -1,0 +1,841 @@
+---
+title: "Singapore HDB Resale Market Trend From 1990 to the Present"
+author: "Sally Marcellina Yeo"
+output: word_document
+date: "`r format(Sys.time(), '%d %B %Y')`"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+```{r echo=F}
+# set your working directory here
+setwd("/Users/sallyyeo/Desktop/501ECA")
+```
+
+
+# Executive Summary
+
+This report employs diverse visualization techniques to present insights into the Singapore HDB resale market. Line plots are utilized to illustrate time-series data of average prices per square foot (psf) for different periods, providing a holistic view of market trends. Bar charts depict transaction volumes over time, offering a comprehensive understanding of market activity. Subsequently, scatter plots show the average prices psf per remaining lease year, providing understanding of how the resale HDB hold its value. Additionally, scatter plots and map plots showcase the average price psf across different flat types and towns in Singapore.
+
+In conclusion, Singapore HDB resale pricing intricately connects with regulatory measures and economic variables such as interest rate in particular, directly impacting demand. The pricing also has close relationship with flat types, age and location. As Singapore continues to evolve, maintaining vigilance in monitoring these factors is essential for cultivating a resilient and sustainable HDB resale market that meets the diverse housing needs of its residents.
+
+# Introduction
+
+Navigating the HDB resale market is intricate due to various regulatory, economic factors, the age of the flat, the location and floor area. Key events such as the 1998 Asian Financial Crisis (AFC) and the 2007 Global Financial Crisis (GFC) had distinct impacts on the HDB resale average price psf (Chng, 2022). The Singapore government implemented cooling measures to stabilize HDB resale prices in response to these financial events (Tan, 2023). The value of the flat would also fall as it ages. A nuanced understanding of these factors empowers stakeholders to navigate the market effectively and anticipate changes. 
+
+The 1998 Asian Financial Crisis (AFC) led to a decline in average psf prices, while the 2007 Global Financial Crisis (GFC) resulted in an upswing. The subsequent impacts of the COVID-19 pandemic, coupled with historically low interest rates and delay in BTO flat development, contributed to increased demand and rising psf prices (Mak & Ha, 2021). Notably, effective cooling measures implemented in 2013 successfully curbed demand and moderated psf prices.
+
+Beyond economic and regulatory factors, resale prices are also influenced by location and the floor size of the flat (Tanggono, 2023). Similar floor sizes can command different resale prices based on their respective locations. An observable trend is that flats situated in outlying towns tend to have lower average psf prices, while those closer to the center of Singapore command higher psf prices.
+
+The depreciation rate of Singapore HDB resale is much slower than the theoretical rate of Bala's curve. The resale flats are able to hold their values as the price decrease slows down as they age (Ong, 2022).
+
+In conclusion, navigating the complex landscape of the HDB resale market demands a comprehensive understanding of various regulatory, economic, and intrinsic factors. The 1998 Asian Financial Crisis (AFC) and the 2007 Global Financial Crisis (GFC) left distinctive imprints on the HDB resale average price per square foot (psf), prompting responsive measures from the Singapore government. The resilience and adaptability of the market were further tested by the impacts of the COVID-19 pandemic and historically low interest rates, resulting in heightened demand and escalating psf prices. Successful interventions, particularly the implementation of cooling measures in 2013, attested to the government's proactive stance in stabilizing the market. Furthermore, the complex interaction of factors like flat age, location, and floor area highlights the intricacies of pricing dynamics. This comprehensive understanding equips stakeholders with the insights needed to navigate the market effectively and anticipate changes, ensuring informed decision-making in the HDB resale market.
+
+# Data
+
+The data is downloaded from https://beta.data.gov.sg/collections/189/view and read using read.csv() into 5 data frames. Firstly, assess the data types and data quality in the data frames using str(), skim() and unique() to find out any missing data, wrong values or data types, upper or lower case differences and other spelling mistakes. The preliminary skim() shows that there are no missing values in the data and preliminary str() shows that there is a difference in numbers of variables between the data frames.
+
+```{r import.data, echo=F}
+df.resale.approved.1990to1999 = read.csv("/Users/sallyyeo/Desktop/501ECA/ResaleFlatPricesBasedonApprovalDate19901999.csv")
+
+df.resale.approved.2000to2012 = read.csv("/Users/sallyyeo/Desktop/501ECA/ResaleFlatPricesBasedonApprovalDate2000Feb2012.csv")
+
+df.resale.registered.2012to2014 = read.csv("/Users/sallyyeo/Desktop/501ECA/ResaleFlatPricesBasedonRegistrationDateFromMar2012toDec2014.csv")
+
+df.resale.registered.2015to2016 = read.csv("/Users/sallyyeo/Desktop/501ECA/ResaleFlatPricesBasedonRegistrationDateFromJan2015toDec2016.csv")
+
+df.resale.registered.2017topresent = read.csv("/Users/sallyyeo/Desktop/501ECA/ResaleflatpricesbasedonregistrationdatefromJan2017onwards.csv")
+
+```
+
+```{r check.data.type, include=F }
+str(df.resale.approved.1990to1999)
+str(df.resale.approved.2000to2012)
+str(df.resale.registered.2012to2014)
+str(df.resale.registered.2015to2016)
+str(df.resale.registered.2017topresent)
+```
+
+```{r skim.data, include=F }
+#install.packages("skimr")
+library(skimr)
+
+skim(df.resale.approved.1990to1999)
+skim(df.resale.approved.2000to2012)
+skim(df.resale.registered.2012to2014)
+skim(df.resale.registered.2015to2016)
+skim(df.resale.registered.2017topresent)
+```
+
+Following are the list of data issues found using str() and skim():
+
+  * Data type of attribute "resale_price" are different between the data frames.
+  * Different number of variables in the data frames.
+  * Data type of the month is not date but character.
+  * Different upper and lowercase values of attribute "flat_model".
+  * Spelling difference for one of the attribute "flat_type" value.
+  
+Following are the data cleaning steps in order:
+
+  * Convert the data type of "resale_price" to numeric to match with other data frames.
+  * Extract the year value from the "remaining_lease" of 2017 to present data set using str_extract() from "stringr" library, and convert it from character to integer.
+  * Merge all sorted data frames using bind_rows() from "dplyr" library.
+  * Convert "month" variable to Date type.
+  * Calculate the value of "remaining_lease" for all combined rows.
+  * Convert all numeric data to integer since there is no decimal places needed.
+  * Convert the values of "flat_model" variable to uppercase.
+  * Replace "MULTI GENERATION" with "MULTI-GENERATION" in the "flat_type" column.
+  * Create a new variable "floor_area_psf" to calculate the floor area in square foot.
+  * Create a new variable "dollar_psf" to calculate the price per square foot (psf) of a flat. Analyzing the price in psf will be better the gauge the value of the house.
+
+```{r data.cleaning, include=F}
+#install.packages("stringr")
+library(stringr)  # to use str_extract()
+
+# convert variables to correct types
+df.resale.approved.1990to1999$resale_price = as.numeric(df.resale.approved.1990to1999$resale_price)
+df.resale.registered.2017topresent$remaining_lease <- as.integer(str_extract(df.resale.registered.2017topresent$remaining_lease, "\\d{2}"))
+
+#install.packages("dplyr")
+library(dplyr)  # to use bind_rows
+
+# combine all data frames
+data <- bind_rows(df.resale.approved.1990to1999, df.resale.approved.2000to2012, df.resale.registered.2012to2014, df.resale.registered.2015to2016, df.resale.registered.2017topresent)
+
+#install.packages("zoo")
+library(zoo)  # to use as.yearmon()
+
+# convert variables to correct types
+data$month <- as.Date(as.yearmon(data$month)) # using zoo package
+
+# calculate the remaining_lease for data sets
+data %>%
+  mutate(remaining_lease = 99-(as.numeric(format(month,'%Y'))-lease_commence_date)) -> 
+  data
+
+# convert variables to correct types
+data %>% 
+  mutate_if(is.numeric, as.integer) -> data
+
+# check for unique variable values
+unique(data$flat_type)
+unique(data$town)
+unique(data$flat_model)
+
+# convert to uppercase
+data$flat_model <- toupper(data$flat_model)
+
+# replace all the "MULTI GENERATION" to "MULTI-GENERATION"
+data$flat_type <- gsub("MULTI GENERATION", "MULTI-GENERATION", data$flat_type)
+
+# calculate floor area in sqf
+data$floor_area_sqf <- round(data$floor_area_sqm * 10.764)
+
+# create new variable "dollar_psf"
+data %>%
+  mutate(dollar_psf = resale_price/floor_area_sqf) -> data
+```
+
+Below is the overview of the cleaned data:
+
+``` {r head.ten, echo=F}
+str(data)
+```
+
+# Analysis
+
+Line plot will be used to understand the bigger picture of Singapore HDB resale market in terms of the average price psf across 1990-2023. It is best to use line plot for time series data. To plot the visualization, we need to generate a few variables and data frame.
+
+Following are the data processing steps taken:
+
+  * Calculate the average price psf using group by date, summarise(), mean(), and put it into a separate data frame called "psf_df".
+
+Geom_line() will be used to show the trend across 1990 to 2023 as shown below. Geom_ribbon() has been used to highlight the rising price. Theme() will be used to adjust the label of axis and plot title.
+
+``` {r data.processing.general.line.plot, echo=F}
+##### line plot #####
+# create a new data frame and aggregrate on the date to get the average psf
+psf_df <- data %>%
+  group_by(month) %>%
+  summarise(average_dollar_psf = mean(dollar_psf))
+```
+
+``` {r general.line.plot.psf, echo=F}
+##### line plot average price psf per year #####
+#install.packages("ggplot2")
+library(ggplot2)
+
+# plot using average_dollar_psf with ribbon
+ggplot(psf_df, aes(x = month, 
+                 y = average_dollar_psf)) +
+  geom_line() +
+  geom_ribbon(aes(xmin = as.Date("1997-07-01"), 
+                  xmax = as.Date("2007-09-30"), 
+                  y = average_dollar_psf), 
+              fill="red", 
+              alpha=0.5, 
+              inherit.aes = F) +
+  geom_ribbon(aes(xmin = as.Date("2009-01-01"), 
+                xmax = as.Date("2014-12-31"), 
+                y = average_dollar_psf), 
+            fill="red", 
+            alpha=0.5, 
+            inherit.aes = F) +
+  geom_ribbon(aes(xmin = as.Date("2020-04-01"), 
+                  xmax = as.Date("2024-02-01"), 
+                  y = average_dollar_psf), 
+              fill="red", 
+              alpha=0.5, 
+              inherit.aes = F) +
+  scale_y_continuous(labels = scales::dollar_format(prefix = "$"), 
+                     breaks = seq(0, 
+                                  max(psf_df$average_dollar_psf), 
+                                  by = 50)) +
+  scale_x_date(breaks = seq(as.Date("1990-01-01"), 
+                            as.Date("2024-02-01"), 
+                            by = "1 years"), 
+               date_labels = "%Y") +
+  labs(title = "Average Price psf of Resale HDB\nfrom 1990 to 2024",
+       x = "Year",
+       y = "Average Price psf (SGD)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1),
+        plot.title = element_text(size = 10)) +
+  ylim(0, 650)
+
+```
+
+The line plot above reveals three noteworthy observations that appear to be associated with key events such as the 1998 Asian Financial Crisis (AFC), the 2007 Global Financial Crisis (GFC), the implementation of property cooling measures in 2013, and the subsequent impact of the post-Covid-19 era. The effects of the two financial crises on HDB resale price psf were distinct (Mak & Ha, 2021). Following the AFC in 1997 Q3, there was a decline in the average price psf, with a recovery commencing only in 2008. Conversely, after the GFC in late 2007, global quantitative easing measures led to a surge in pricing until the introduction of cooling measures in 2013. Subsequently, the average price psf experienced a decline and remained stable for approximately seven years before witnessing an upward trend during the post-Covid-19 period. This shows that the cooling measures done by Singapore government was able to stabilize the pricing of HDB resale.
+
+The line plot will be zoomed into the post 1998 AFC, GFC, and Covid-19. Stacked bar chart of transaction volume will also be used to compare pricing and transaction volume for these time period.
+
+Following is the list of data processing steps taken for line plots:
+
+  * Create "quarter" variable to the main data set using yearqtr() so that it is easier to filter data by quarter of year.
+  * Create average price psf data frames for AFC, GFC and Covid-19 using group by date and summarise price psf using mean().
+  * Calculate the data points to plot a dashed line on top of the geom_line() to show the initial point, lowest point and highest point. This is done using geom_segment() and the label of the point value is done by geom_text().
+  * Assign the ggplot + geom_line() respectively to "post_afc_psf_plot", "post_gfc_psf_plot" and  post_covid_psf_plot which will be used to combine with bar charts using patchwork library.
+  
+Following is the list of data processing taken for stacked bar charts:
+
+  * Create a general transaction volume data frame group by year and summarise the number of transaction by using n(). This data frame will be used to further subset data for AFC, GFC and Covid-19 period.
+  * Create transaction volume data frames for each AFC, GFC and Covid-19 by filtering the date using subset(). 
+  * Assign respective ggplot and geom_bar() for AFC, GFC and Covid-19 to the "txn_volume_post_afc_plot", "txn_volume_post_gfc_plot" and txn_volume_post_covid_plot which will be used to combine with line plots using patchwork library.
+  
+
+``` {r data.processing.post.AFC.GFC, echo=F}
+##### data processing for line plot post AFC 1997 Q3 - 2008 Q4 #####
+# create a quarter variable
+data$quarter <- as.yearqtr(data$month)
+
+# filter data from 1997 Q3 - 2008 Q4
+post_afc_df <- data[data$quarter >= "1997 Q3" & data$quarter <= "2008 Q4", ]
+
+# create a new data frame and aggregrate by date
+# to get the average psf for post 1998 AFC
+post_afc_psf_df <- post_afc_df %>%
+  group_by(month) %>%
+  summarise(average_dollar_psf = mean(dollar_psf))
+
+# Calculate the data points for drawing dashed line using geom_segment()
+initial_point <- post_afc_psf_df %>% filter(month == as.Date("1997-07-01"))
+lowest_point <- post_afc_psf_df %>% filter(average_dollar_psf == min(average_dollar_psf))
+highest_point <- post_afc_psf_df %>% filter(average_dollar_psf == max(average_dollar_psf))
+```
+
+``` {r plot.post.AFC, echo=F}
+##### line plot for post AFC #####
+#install.packages("tidyverse)
+library(tidyverse) # for data manipulation
+
+#install.packages("patchwork")
+library(patchwork) # for combining plots in one
+
+# assign ggplot to post_afc_psf_plot so it can be combined to other plot later on
+post_afc_psf_plot <- ggplot(post_afc_psf_df, 
+                         aes(x = month, 
+                             y = average_dollar_psf)) +
+  geom_line() +
+  geom_segment(aes(x = initial_point$month, 
+                   y = initial_point$average_dollar_psf,
+                   xend = lowest_point$month, 
+                   yend = lowest_point$average_dollar_psf),
+               linetype = "dashed", 
+               color = "red") +
+  # to draw dashed line to the geom_line()
+  geom_segment(aes(x = lowest_point$month, 
+                   y = lowest_point$average_dollar_psf,
+                   xend = highest_point$month, 
+                   yend = highest_point$average_dollar_psf),
+               linetype = "dashed", 
+               color = "blue") +
+  # to label data points
+  geom_text(aes(x = initial_point$month, 
+                y = initial_point$average_dollar_psf, 
+                label = round(initial_point$average_dollar_psf)),
+            vjust = -0.5, 
+            hjust = -0.5, 
+            color = "green") +
+  geom_text(aes(x = lowest_point$month, 
+                y = lowest_point$average_dollar_psf, 
+                label = round(lowest_point$average_dollar_psf)),
+            vjust = 0, 
+            hjust = -1, 
+            color = "blue") +
+  geom_text(aes(x = highest_point$month, 
+                y = highest_point$average_dollar_psf, 
+                label = round(highest_point$average_dollar_psf)),
+            vjust = 1, 
+            hjust = 2, 
+            color = "red") +
+  scale_y_continuous(labels = scales::dollar_format(prefix = "$"),
+                     breaks = seq(0, 
+                                  max(post_afc_psf_df$average_dollar_psf), 
+                                  by = 10)) +
+  scale_x_date(breaks = seq(as.Date("1997-07-01"), 
+                            as.Date("2008-12-31"), 
+                            by = "1 years"),
+               date_labels = "%Y") +
+  labs(title = "Average Price Per Square Foot (psf) for Resale HDB\nPost 1998 Asian Financial Crisis",
+       x = "Year",
+       y = "Average Price psf") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1),
+        plot.title = element_text(size = 10))
+
+##### bar chart for post AFC #####
+# create a transaction volume data frame for post AFC
+txn_volume_df <- data %>% 
+  group_by(year = year(month)) %>% 
+  summarise(num_txn = n()) # to prevent error message
+
+txn_volume_post_afc_df <- subset(txn_volume_df, 
+                        year >= 1997 & year <= 2008)
+
+# create txn_volume_plot for post AFC
+txn_volume_post_afc_plot <- ggplot(txn_volume_post_afc_df, 
+                          aes(y = num_txn, 
+                              x = year)) + 
+  geom_bar(position = "stack", 
+           stat = "identity") +
+  geom_text(aes(label = num_txn), 
+            position = position_stack(vjust = 0.5), 
+            color = "white", 
+            size = 2) +  # Adjust the size as needed
+  scale_x_continuous(breaks = seq(min(txn_volume_post_afc_df$year), 
+                                  max(txn_volume_post_afc_df$year), 
+                                  by = 1)) +
+  labs(title = "HDB Resale Transaction Volume Post AFC\nFrom 1997 Q3 to 2013 Q1",
+       x = "Year",
+       y = "Number of transactions") +
+  theme(plot.title = element_text(size = 10))
+
+# Arrange both plots one on top of another using patchwork
+combined_afc_psf_plots <- txn_volume_post_afc_plot / post_afc_psf_plot
+
+# Display the combined plots
+combined_afc_psf_plots
+```
+
+After the 1998 AFC, the average price psf of resale HDB had dropped and remained constant and low for 11 years as illustrated by the line plot above. It dips at around mid year 2002, the lowest in that decade. In the initial stage of the 1998 AFC, event though transaction volume increased drastically, the average price psf falls. The demand did not increase the price psf but the recession brought the price psf down. This increase in the transaction volume could partly due to individuals with impacted incomes are shifting from private properties to public housing, thereby facilitating activity in the HDB market. 
+
+``` {r plot.post.GFC, echo=F}
+##### line plot for post GFC #####
+# Data engineer for line plot post GFC 2007 Q1 - 2012 Q4
+# filter data from 2007 Q1 - 2012 Q4
+post_gfc_df <- data[data$quarter >= "2007 Q1" & data$quarter <= "2012 Q4", ]
+
+# create a new data frame and aggregrate dollar_psf by date
+# to get the average psf for post GFC
+post_gfc_psf_df <- post_gfc_df %>%
+  group_by(month) %>%
+  summarise(average_dollar_psf = mean(dollar_psf))
+
+# plot average_dollar_psf for 2007 Q1 - 2012 Q4 and assign to post_gfc_psf_plot to combine with other plot
+post_gfc_psf_plot <- ggplot(post_gfc_psf_df, 
+                            aes(x = month, 
+                                y = average_dollar_psf)) +
+  geom_line() +
+  geom_segment(aes(x = min(month), 
+                   y = min(average_dollar_psf),
+                   xend = max(month), 
+                   yend = max(average_dollar_psf)),
+               linetype = "dashed", color = "red") +
+  geom_text(aes(x = min(month), 
+                y = round(min(average_dollar_psf)), 
+                label = round(min(average_dollar_psf))),
+            vjust = -1, 
+            hjust = -0.5, 
+            color = "red") +
+  geom_text(aes(x = max(month), 
+                y = round(max(average_dollar_psf)), 
+                label = round(max(average_dollar_psf))),
+            vjust = 1.5, 
+            hjust = 0.5, 
+            color = "red") +
+  scale_y_continuous(labels = scales::dollar_format(prefix = "$"), 
+                     breaks = seq(0, 
+                                  max(post_gfc_psf_df$average_dollar_psf), 
+                                  by = 20)) +
+  scale_x_date(breaks = seq(as.Date("2007-01-01"), 
+                            as.Date("2012-12-31"), 
+                            by = "1 years"), 
+               date_labels = "%Y") +
+  labs(title = "Average Price psf for Resale HDB Flat Types\nPost GFC From 2007 Q1 to 2012 Q4",
+       x = "Year",
+       y = "Average Price psf") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1),
+        plot.title = element_text(size = 10))  # Rotate x-axis labels for better visualization
+
+##### bar chart for post GFC #####
+# create a transaction volume data frame for post GFC
+txn_volume_post_gfc_df <- subset(txn_volume_df, 
+                        year >= 2007 & year <= 2012)
+
+# create txn_volume_plot for post GFC
+txn_volume_post_gfc_plot <- ggplot(txn_volume_post_gfc_df, 
+                          aes(y = num_txn, 
+                              x = year)) + 
+  geom_bar(position = "stack", 
+           stat = "identity") +
+  geom_text(aes(label = num_txn), 
+            position = position_stack(vjust = 0.5), 
+            color = "white", 
+            size = 3) +  # Adjust the size as needed
+  scale_x_continuous(breaks = seq(min(txn_volume_post_gfc_df$year), 
+                                  max(txn_volume_post_gfc_df$year), 
+                                  by = 1)) +
+  labs(title = "HDB Resale Transaction Volume Post GFC\nFrom 2007 Q1 to 2012 Q4",
+       x = "Year",
+       y = "Number of transactions") +
+  theme(plot.title = element_text(size = 10))
+
+
+# Arrange both plots one on top of another using patchwork
+combined_gfc_psf_plots <- txn_volume_post_gfc_plot / post_gfc_psf_plot
+
+# Display the combined plots
+combined_gfc_psf_plots
+
+
+```
+
+On the other hand, after the 2007 GFC, the extensive global quantitative easing contributed to housing price surges in countries less affected by the GFC, including Singapore. Prices soared in 2009, driven by increased foreign investment. The first cooling measures was introduced in 2011 to increase the cost of transaction by reducing loan-to-value limit, decreasing demand. This can be seen from the bar chart above where the transaction volume dropped drastically in 2011.
+
+```{r after.2012, echo=F}
+##### line plot for 2012-2023 #####
+# Data engineer for line plot post from 2012-2023
+# filter data from 2012 Q1 - 2023 Q4
+after_2012_df <- data[data$quarter >= "2012 Q1" & data$quarter <= "2023 Q4", ]
+
+# create a new data frame and aggregrate by date
+# to get the average psf for 2012-2023
+after_2012_psf_df <- after_2012_df %>%
+  group_by(month) %>%
+  summarise(average_dollar_psf = mean(dollar_psf))
+
+after_2012_psf_plot <- ggplot(after_2012_psf_df, 
+                            aes(x = month, 
+                                y = average_dollar_psf)) +
+  geom_line() +
+  scale_y_continuous(labels = scales::dollar_format(prefix = "$"), 
+                     breaks = seq(0, 
+                                  max(after_2012_psf_df$average_dollar_psf), 
+                                  by = 20)) +
+  scale_x_date(breaks = seq(as.Date("2012-01-01"), 
+                            as.Date("2023-12-31"), 
+                            by = "1 years"), 
+               date_labels = "%Y") +
+  labs(title = "Average Price Per Square Foot (psf) for Resale HDB Flat\nFrom 2012-2023",
+       x = "Year",
+       y = "Average Price psf") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, 
+                                   hjust = 1),
+        plot.title = element_text(size = 10))  # Rotate x-axis labels for better visualization
+
+##### bar chart for 2012-2023 #####
+# transaction volume from 2012 to 2023
+txn_volume_after2012_df <- subset(txn_volume_df, 
+                        year >= 2012 & year <= 2023)
+
+# create txn_volume_plot for 1990 to 2023
+txn_volume_after2012_plot <- ggplot(txn_volume_after2012_df, 
+                                   aes(y = num_txn, 
+                                       x = year)) + 
+  geom_bar(position = "stack", 
+           stat = "identity") +
+  geom_text(aes(label = num_txn), 
+            position = position_stack(vjust = 0.5), 
+            color = "white", 
+            size = 3,
+            angle = 90) +  # label chart 90 degree
+  scale_x_continuous(breaks = seq(min(txn_volume_after2012_df$year), 
+                                  max(txn_volume_after2012_df$year), 
+                                  by = 1)) +
+  labs(title = "HDB Resale Transaction Volume\nFrom 2012-2023",
+       x = "Year",
+       y = "Number of transactions") +
+  theme(plot.title = element_text(size = 10),
+        axis.text.x = element_text(angle = 90, 
+                                   hjust = 1))
+
+# Arrange both plots one on top of another using patchwork
+combined_after2012_plots <- txn_volume_after2012_plot / after_2012_psf_plot
+
+# Display the combined plots
+combined_after2012_plots
+
+```
+
+After second cooling measures done in 2013, the transaction volume dropped drastically from 2012 to 2013 and the average price psf was brought down and remained constant until the Covid-19 pandemic.
+
+``` {r plot.post.covid, echo=F}
+##### data processing for the line plot from 2020-present #####
+# filter data from 2020-present
+post_covid_df <- data[data$quarter >= "2020 Q1" & data$quarter <= "2023 Q4", ]
+
+# create a new data frame and aggregrate by date 
+# to get the average psf for post Covid-19
+post_covid_psf_df <- post_covid_df %>%
+  group_by(month) %>%
+  summarise(average_dollar_psf = mean(dollar_psf))
+
+##### line plot for post covid #####
+# assign the ggplot to post_covid_psf_plot so it can be combined with other plot later on
+post_covid_psf_plot <- ggplot(post_covid_psf_df, aes(x = month, y = average_dollar_psf)) +
+  geom_line() +
+  geom_segment(aes(x = min(month), 
+                   y = average_dollar_psf[1],
+                   xend = max(month), 
+                   yend = tail(average_dollar_psf, 1)),
+               linetype = "dashed", color = "red") +
+  geom_text(aes(x = min(month), 
+                y = round(min(average_dollar_psf)), 
+                label = round(min(average_dollar_psf))),
+            vjust = -2, 
+            hjust = 0, 
+            color = "red") +
+  geom_text(aes(x = max(month), 
+                y = round(max(average_dollar_psf)), 
+                label = round(max(average_dollar_psf))),
+            vjust = 1.5, 
+            hjust = 0.5, 
+            color = "red") +
+  scale_y_continuous(labels = scales::dollar_format(prefix = "$"), 
+                     breaks = seq(0, max(post_covid_psf_df$average_dollar_psf), by = 20)) +
+  labs(title = "Average Price Per Square Foot (psf) for Resale HDB Post Covid-19\nFrom 2020 Q1 to 2023 Q4",
+       x = "Year",
+       y = "Average Price psf") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))  # Rotate x-axis labels for better visualization
+
+##### bar chart for post covid #####
+# plot transaction bar chart
+post_covid_df <- data %>% 
+  group_by(month, flat_type) %>% 
+  summarise(num_txn = n()) # to prevent error message
+
+txn_volume_post_covid_df <- subset(post_covid_df, 
+                        month >= "2020-01-01" & month <= "2023-12-31")
+
+# create txn_volume_plot for post covid
+txn_volume_post_covid_plot <- ggplot(txn_volume_post_covid_df, 
+                          aes(fill = flat_type,
+                              y = num_txn, 
+                              x = month)) + 
+  geom_bar(position = "stack", 
+           stat = "identity") +
+  labs(title = "HDB Resale Transaction Volume Post Covid-19\nFrom 2020 Q1 to 2023 Q4",
+       x = "Year",
+       y = "Number of transactions") +
+  theme(legend.key.size = unit(0.1, "cm"))  # Adjust the size as needed
+
+# Arrange both plots one on top of another using patchwork
+combined_covid_psf_plots <- txn_volume_post_covid_plot / post_covid_psf_plot
+
+# Display the combined plots
+combined_covid_psf_plots
+
+```
+
+The transaction volume during 2020 Q2 fell drastically due to implementation of circuit breaker (OrangeTee, n.d). However, the transaction volume bounced back in the next quarter and it remains quite constant but high compared to pre Covid-19. Due to United States' response to the Covid-19, bank loans have reached historic low from 2020 to 2022 resulting in increase in the demand for HDB resale, driving up the price psf. The fear of delay in BTO HDB flat development also resulted in buyers seeking for resale HDB, driving up demand and price (Mak & Ha, 2021). From the analysis of these past financial crisis and pandemic, we can conclude that interest rate plays a big part in the average price psf of resale HDB. Low interest rate caused by global financial crisis and pandemic could easily drive up demand and price psf for resale HDB (Kit, 2022).
+
+Next, scatter plots of average price psf per remaining lease year of a flat will be shown to find out the depreciation rate of Singapore resale HDB, especially for 3-room, 4-room and 5-room flats.
+
+Following is the list of data processing before plotting:
+
+  * New data frames will be created to filter different types of flat for year 2019-2023. The average price psf of these flats are grouped by remaining_lease and computed using mean(). They are assigned to age_3room_df, age_4room_df and age_5room_df. See below for the snippet of code.
+
+``` {r data.process.age.plot, echo=T}
+##### Data Processing #####
+# Filter out the flat type and the data in the last 5 years
+age_3room_df <- data %>% 
+  filter(format(month, "%Y") %in% c("2019", "2020", "2021", "2022", "2023")) %>%
+  filter(flat_type %in% "3 ROOM") %>%
+  group_by(remaining_lease) %>% 
+  summarise(average_dollar_psf = mean(dollar_psf))
+
+age_4room_df <- data %>% 
+  filter(format(month, "%Y") %in% c("2019", "2020", "2021", "2022", "2023")) %>%
+  filter(flat_type %in% "4 ROOM") %>%
+  group_by(remaining_lease) %>% 
+  summarise(average_dollar_psf = mean(dollar_psf))
+
+age_5room_df <- data %>% 
+  filter(format(month, "%Y") %in% c("2019", "2020", "2021", "2022", "2023")) %>%
+  filter(flat_type %in% "5 ROOM") %>%
+  group_by(remaining_lease) %>% 
+  summarise(average_dollar_psf = mean(dollar_psf))
+```
+
+Geom_point() is used to show the scatter plot and geom_smooth() is used to show the polynomial line. Theme() is used to adjust plot title and axis title. Scale_x_reverse() is used to show the x-axis in descending order. See below for snippet of code for one of the scatter plot.
+
+``` {r age.plot.show.code, echo=T}
+##### 3-ROOM scatter plot #####
+ggplot(age_3room_df, 
+       aes(x = remaining_lease, 
+           y = average_dollar_psf)) + 
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ poly(x, degree = 2), se = FALSE, color = "blue") +  # Add polynomial trend line
+  labs(title = "Average Price psf For Resale HDB Per Remaining Lease Year\n3-Room Flat For 2019-2023",
+       x = "Remaining Lease Year",
+       y = "Average Price psf (SGD)") +
+  scale_x_reverse(breaks = seq(0, 
+                               max(age_3room_df$remaining_lease), 
+                               by = 10)) +
+  theme(plot.title = element_text(size = 10),  # Adjust the title size
+        axis.title.x = element_text(size = 10),  # Adjust x-axis label size
+        axis.title.y = element_text(size = 10))  # Adjust y-axis label size
+```
+
+``` {r age.plot, echo=F}
+##### 4-ROOM scatter plot #####
+ggplot(age_4room_df, 
+       aes(x = remaining_lease, 
+           y = average_dollar_psf)) + 
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ poly(x, degree = 2), se = FALSE, color = "blue") +  # Add polynomial trend line
+  labs(title = "Price psf For Resale HDB Per Remaining Lease Year\n4-Room Flat For 2019-2023",
+       x = "Remaining Lease Year",
+       y = "Average Price psf (SGD)") +
+  scale_x_reverse(breaks = seq(0, 
+                               max(age_4room_df$remaining_lease), 
+                               by = 10)) +
+  theme(plot.title = element_text(size = 10),  # Adjust the title size
+        axis.title.x = element_text(size = 10),  # Adjust x-axis label size
+        axis.title.y = element_text(size = 10))  # Adjust y-axis label size
+
+##### 5-ROOM scatter plot #####
+ggplot(age_5room_df, 
+       aes(x = remaining_lease, 
+           y = average_dollar_psf)) + 
+  geom_point() +
+  geom_smooth(method = "lm", formula = y ~ poly(x, degree = 2), se = FALSE, color = "blue") +  # Add polynomial trend line
+  labs(title = "Price psf For Resale HDB Per Remaining Lease Year\n5-Room Flat For 2019-2023",
+       x = "Remaining Lease Year",
+       y = "Average Price psf (SGD)") +
+  scale_x_reverse(breaks = seq(0, 
+                               max(age_5room_df$remaining_lease), 
+                               by = 10)) +
+  theme(plot.title = element_text(size = 10),  # Adjust the title size
+        axis.title.x = element_text(size = 10),  # Adjust x-axis label size
+        axis.title.y = element_text(size = 10))  # Adjust y-axis label size
+
+```
+
+The Bala's Curve method stands out as a widely adopted approach for assessing leasehold value. This methodology states that depreciation intensifying as the lease approaches its conclusion. The presented scatter plots depict transactions for 3-room, 4-room and 5-room flats across different age groups. The rest of the flat types are not included due to insufficient transactions during the filtered year duration, making it insignificant to the analysis. The observed polynomial trend line exhibits a pattern resembling a linear to inverted U curve. This implies that the rate of price reduction remains consistent or decelerates as the property ages, in contrast to the accelerating inverted U shape observed in Bala's Curve.
+
+Next, line plot will be used to see the average resale price trend of different flat types from 1990 to present.
+
+``` {r general.line.plot.2, echo=F}
+# Relationship Between Average Resale Prices and Flat Model
+ggplot(data, aes(x = month, 
+                 y = resale_price, 
+                 group = flat_type, 
+                 color = flat_type)) +
+  stat_summary(fun.y = "mean", 
+               geom = "line", 
+               size = 0.5) +
+  scale_y_continuous(labels = scales::dollar_format(prefix = "$"), breaks = seq(0, max(data$resale_price), by = 50000)) +
+  scale_x_date(breaks = seq(as.Date("1990-01-01"), as.Date("2024-02-01"), by = "5 years"), date_labels = "%Y") +
+  labs(title = "Average Resale Price for Different HDB Flat Types\nFrom 1990 to Present",
+       x = "Year",
+       y = "Average Resale Price (SGD)") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 10),
+        axis.title.x = element_text(size = 8),  # Adjust the x-axis label size
+        axis.title.y = element_text(size = 8), # Adjust the y-axis label size
+        axis.text.x = element_text(angle = 90, hjust = 1, size = 5),
+        axis.text.y = element_text(size = 5),
+        legend.key.size = unit(0.05, "cm"),  # Adjust the size as needed
+        legend.text = element_text(size = 8))  # Adjust the legend text size
+  
+```
+
+The average resale price of the multi-generation flat is more volatile. This could be due to small amount of transaction for this type of flat.
+
+To plot the transation volume bar chart, a new data frame, flat_type_df, is created to contain flat types and its count using group_by (flat_type) and summarise() number of transaction using n(). See below for the code snippet.
+
+``` {r data.processing.txn.vol, echo=T}
+flat_type_df <- data %>% 
+  group_by(flat_type) %>% 
+  summarise(num_txn = n())
+```
+
+Geom_bar() is used to showcase the transaction volume of different flat types from 1990 to present.
+
+``` {r txn.vol.bar.chart, echo=F}
+ggplot(flat_type_df,
+       aes(fill = flat_type,
+           x = flat_type,
+           y = num_txn / 1000)) + 
+  geom_bar(stat = "identity", 
+           position = "stack") +
+  geom_text(aes(label = num_txn), 
+            position = position_stack(vjust = 0.5), 
+            color = "black", 
+            size = 2) +
+  labs(title = "HDB Resale Transaction Volume of Different Flat Types\nFrom 1990-Present",
+       x = "Flat Type",
+       y = "Number of Transactions (in 1000)") +
+  scale_y_continuous(labels = scales::comma_format(scale = 1)) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        plot.title = element_text(size = 10))  # Rotate x-axis labels for better visual
+```
+
+The number of transaction for "MULTI-GENERATION" flat type is only 542 from 1990 to present, shown by the bar chart above. The bar chart also shows that 4-room flat is the most transacted.
+
+Next, boxplot will be used to see the relationship between the resale prices and flat type. Data will be filtered from year 2023 to present and assigned to flat_model_df. The type of flat is also filtered to include only 3-room, 4-room, 5-room, and executive. The geom_boxplot() is used to illustrate the boxplot and stat_summary() is used to label the median. Below is the snippet of the code.
+
+```{r flat.model.resale.price.boxplot, echo=T}
+# filter data from 2023 Q1 - 2024 Q1
+flat_model_df <- data %>% 
+  filter(format(month, "%Y") %in% c("2023", "2024")) %>%
+  filter(flat_type %in% c("3 ROOM", "4 ROOM", "5 ROOM", "EXECUTIVE")) 
+
+# Plotting boxplot for resale prices by flat type and label median
+ggplot(flat_model_df, aes(x = flat_type, y = resale_price)) +
+  geom_boxplot(fill = "skyblue", color = "black") +
+  stat_summary(fun = "median", geom = "text", aes(label = paste("Median:", round(..y.., 2))),
+               position = position_dodge(width = 0.75), vjust = -0.5, size = 3) +  # Add median label
+  labs(title = "Boxplot: Resale Prices by Flat Type\nFrom 2023-Present",
+       x = "Flat Type",
+       y = "Resale Price (SGD)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_y_continuous(breaks = seq(0, max(flat_model_df$resale_price), by = 100000),
+                     labels = scales::comma,
+                     minor_breaks = seq(0, max(flat_model_df$resale_price), by = 10000))
+
+```
+
+From the boxplot, there are many outliers for all the flat types. This shows that the same flat type can vary in resale price based on location and floor area. 
+
+Next, using the same flat_model_df, the scatter plot below, illustrated using geom_point(), proves that the same floor area can have various resale prices. This could be due to difference in location. Some locations could have higher resale price than the others.
+
+
+```{r floor.size.resale.price, echo=F}
+ggplot(flat_model_df, aes(x = floor_area_sqm, y = resale_price)) +
+  geom_point(color = "blue") +
+  labs(title = "Scatter Plot: Resale Prices vs. Floor Area\nFrom 2023-Present",
+       x = "Floor Area (sqm)",
+       y = "Resale Price (SGD)") +
+  theme_minimal()
+
+```
+
+Next, map plot will be used to show how price psf varies for different areas in Singapore from 2020 onwards.
+
+Data processing steps taken:
+
+  * create a data frame "map_data_df" to subset data from 2020 onwards.
+  * marking the map by creating data frame "lat_lon_map_df" with town, and latitude and longitude. The latitude and longitude of each town are populated by extracting it from google map manually.
+  * calculate the average price psf group by town, summarise() and mean() and assign to new data frame "town_price_psf_df"
+  * merge the "town_price_psf_df" with "lat_lon_map_df" by "town".
+  * create a new variable called "color_to_plot" to categorize prices into 3. If the average price psf is more than equal to 600, it will be set as red, If the average price psf is more than equal to 500, it will be set as green, If the average price psf is more than equal to 400, it will be set as yellow.
+
+``` {r data.processing.map.leaflet.plot, echo=F}
+# Filter year from the main data
+map_data_df <- subset(data, month > "2020-01-01")
+
+# marking the map by creating data frames with town, and lat long
+town <- c("ANG MO KIO", "BEDOK", "BISHAN", "BUKIT BATOK", "BUKIT MERAH", "BUKIT PANJANG", 
+          "BUKIT TIMAH", "CENTRAL AREA", "CHOA CHU KANG", "CLEMENTI", "GEYLANG", "HOUGANG", 
+          "JURONG EAST", "JURONG WEST", "KALLANG/WHAMPOA", "MARINE PARADE", "PASIR RIS", "PUNGGOL", 
+          "QUEENSTOWN", "SEMBAWANG", "SENGKANG", "SERANGOON", "TAMPINES", "TOA PAYOH", 
+          "WOODLANDS", "YISHUN")
+
+lat <-c(1.3691275, 1.3234583, 1.3506286, 1.3490395, 1.2835189, 1.3781962, 
+        1.3301289, 1.2960918, 1.3889474, 1.3151795, 1.3171468, 1.3717871, 
+        1.3337862, 1.3393132, 1.3106797, 1.3027887, 1.3733546, 1.4064128, 
+        1.2995458, 1.4490698, 1.390879, 1.3514605, 1.3526767, 1.3352485, 
+        1.4378143, 1.4300536)
+
+lon <-c(103.8454939, 103.9271546, 103.8475392, 103.7494611, 103.820135, 103.7700594, 
+        103.792448, 103.8479968, 103.743734, 103.7649734, 103.8867987, 103.8919224, 
+        103.7417185, 103.7070628, 103.8650184, 103.9053028, 103.9492515, 103.9029414, 
+        103.7997241, 103.8197324, 103.8948787, 103.8697044, 103.9454262, 103.8494389, 
+        103.7885617, 103.8353864)    
+
+lat_lon_map_df <- data.frame(town, lat, lon)
+
+town_price_psf_df <- map_data_df %>% 
+  group_by(town) %>% 
+  summarise(average_dollar_psf = mean(dollar_psf),
+            num_of_records = n())
+
+# merge town_price_psf_df and lat_lon_map
+town_price_psf_df <- merge(town_price_psf_df, lat_lon_map_df, by = "town")
+
+# create color_to_plot variable
+town_price_psf_df$color_to_plot <- ifelse(town_price_psf_df$average_dollar_psf >= 600, "red",
+                                     ifelse(town_price_psf_df$average_dollar_psf >= 500, "green",
+                                            ifelse(town_price_psf_df$average_dollar_psf >= 400, "yellow", town_price_psf_df$color_to_plot)))
+```
+
+Below is the code snippet of leaflet:
+
+``` {r map.leaflet.plot, echo=F}
+#install.packages("leaflet")
+library(leaflet)
+
+# use popup to show label
+leaflet(town_price_psf_df) %>% 
+  addProviderTiles(providers$OpenStreetMap) %>% 
+  addCircleMarkers(~lon, ~lat, color = ~color_to_plot, radius = 50, popup = ~paste("Town: ", town, "<br> Average PSF: $", round(average_dollar_psf)))
+```
+
+
+The map plot above is illustrated using leaflet package. The addProviderTiles(providers$OpenStreetMap) is used to show the Singapore map. The addCircleMarkers() is used to show the colored circles on each town. The average price psf will be shown when clicking on the colored circles. From the map plot, it is observed that the areas on the edges have lower average price psf shown by yellow circles. The average price psf increase as the circles move into the centre of Singapore. The areas with red circles have highest average price psf. Therefore, location is prime factor for estimating average price psf.
+
+
+# Conclusion
+In summary, these visualizations offer valuable insights for stakeholders, providing information on potential changes in the average prices per square foot of resale HDB during financial crises or events affecting interest rates. Prospective buyers can explore areas within their budget, considering that different locations exhibit distinct average price psf patterns.
+
+# References
+
+Chng, S. (2022, March 26). Impact of the Asian and global financial crises on the Singapore property market (Updated). Stuart Chng. https://www.stuartchng.com/post/impact-of-the-asian-and-global-financial-crises-on-the-singapore-property-market. accessed on  25 Feb 2024
+
+Kit, T. S. (2022, October 28). HDB resale flat prices propped up by “unrelenting interest” in million-dollar deals: Analysts. CNA. https://www.channelnewsasia.com/singapore/hdb-resale-flat-prices-strong-demand-million-dollar-transactions-property-3030186. accessed on 26 Feb 2024
+
+Mak, N., & Ha, N. T. (2021, March 31). Are rising HDB prices the new normal? The Business Times. https://www.businesstimes.com.sg/property/property-2021-april-issue/are-rising-hdb-prices-new-normal
+
+Ong, R. (2022, November 16). Older HDB Flats Don’t Depreciate As Quickly As You Think. Here’s What The Numbers Show. Property Blog Singapore - Stacked Homes. https://stackedhomes.com/editorial/older-hdb-flats-dont-depreciate-as-quickly-as-you-think-heres-what-the-numbers-show/#gs.5yntqg. accessed on 25 Feb 2024
+
+OrangeTee. (n.d). HDB Market Pulse. https://www.orangetee.com/home/ResearchPath/HDB%20quarter%20data%20Q2%202020.pdf. accessed on 27 Feb 2024
+
+Tan, J. (2023, April 28). A summary of Singapore’s property cooling measures: 1996 to present day. The Business Times. https://www.businesstimes.com.sg/property/mobile-spotlight/summary-singapores-property-cooling-measures-1996-present-day. accessed on 25 Feb 2024
+
+Tanggono, V. (2023, July 11). A breakdown of HDB resale flat price changes by region and flat type (Q2 2023). 99.co. https://www.99.co/singapore/insider/breakdown-hdb-resale-quarterly-price-changes-region-flat-type/. Accessed on 25 Feb 2024
+
+
+
