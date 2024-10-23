@@ -10,7 +10,6 @@ In this course, we explore the use of R programming to construct data visualizat
 # Singapore HDB Resale Market Trend From 1990 to the Present
 
 **Author**: Sally Marcellina Yeo  
-**Date**: `r format(Sys.time(), '%d %B %Y')`
 
 ## Overview
 
