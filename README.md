@@ -40,3 +40,13 @@ The report also examines how significant economic events, such as the 1998 Asian
 
 - **RMarkdown File**: The analysis is contained in the file `ANL501_ECA_Sallyyeo001_SallyMarcellinaYeo.Rmd`, which can be used to generate a Word document report.
 - **Data Visualizations**: Includes a variety of plots (line plots, bar charts, scatter plots, map plots) to explore and understand market trends.
+
+## Getting Started
+
+### Prerequisites
+
+Make sure you have the following R packages installed:
+
+```r
+install.packages(c("skimr", "stringr", "zoo", "tidyverse", "patchwork", "leaflet", "ggplot2", "dplyr", "sf"))
+
