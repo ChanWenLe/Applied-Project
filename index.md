@@ -4,7 +4,7 @@
 
 This repository contains the visualization of data that I have done for ANL501 Data Visualisation and Storytelling course offered by the Master of Analytics and Visualisation (MAVI) programme at SUSS.
 
-In this course, we explore the use of R programming to construct data visualizations. The course follows <a href="https://socviz.co/"> Data Visualization: A Practical Introduction </a> by Kieran Healy.
+In this course, we explore the use of R programming to construct data visualizations. The course follows <a href="https://socviz.co/"> Data Visualization: A Practical Introduction </a> by Kieran Healy. The data can be found <a href="https://data.gov.sg/datasets?query=resale+flat+price+based+on+approval&page=1&resultId=189"> Resale Flat Price </a>.
 
 
 # Singapore HDB Resale Market Trend From 1990 to the Present
