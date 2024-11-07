@@ -46,12 +46,12 @@ Here is the steps for importing the data in R Studio.
 
 Setting the working directory
 
-```{r, echo=F}
+```{r}
 # set your working directory here
 setwd("/Users/sallyyeo/Desktop/501ECA")
 ```
 
-```{r import.data, echo=F}
+```{r}
 df.resale.approved.1990to1999 = read.csv("ResaleFlatPricesBasedonApprovalDate19901999.csv")
 df.resale.approved.2000to2012 = read.csv("ResaleFlatPricesBasedonApprovalDate2000Feb2012.csv")
 df.resale.registered.2012to2014 = read.csv("ResaleFlatPricesBasedonRegistrationDateFromMar2012toDec2014.csv")
@@ -61,7 +61,7 @@ df.resale.registered.2017topresent = read.csv("Resaleflatpricesbasedonregistrati
 
 Next, I check the data types and skim through the data
 
-```{r check.data.type, include=F }
+```{r}
 str(df.resale.approved.1990to1999)
 str(df.resale.approved.2000to2012)
 str(df.resale.registered.2012to2014)
@@ -69,7 +69,7 @@ str(df.resale.registered.2015to2016)
 str(df.resale.registered.2017topresent)
 ```
 
-```{r skim.data, include=F }
+```{r}
 #install.packages("skimr")
 library(skimr)
 
