@@ -45,7 +45,8 @@ The report also examines how significant economic events, such as the 1998 Asian
 Here is the steps for importing the data in R Studio.
 
 Setting the working directory
-```{r echo=F}
+
+```{r, echo=F}
 # set your working directory here
 setwd("/Users/sallyyeo/Desktop/501ECA")
 ```
@@ -59,6 +60,7 @@ df.resale.registered.2017topresent = read.csv("Resaleflatpricesbasedonregistrati
 ```
 
 Next, I check the data types and skim through the data
+
 ```{r check.data.type, include=F }
 str(df.resale.approved.1990to1999)
 str(df.resale.approved.2000to2012)
@@ -100,7 +102,9 @@ Following are the data cleaning steps in order:
   * Create a new variable "dollar_psf" to calculate the price per square foot (psf) of a flat. Analyzing the price in psf will be better the gauge the value of the house.
 
 # Data Cleaning
+
 Convert variables to the correct data types.
+
 ```{r data.cleaning, include=F}
 #install.packages("stringr")
 library(stringr)  # to use str_extract()
@@ -111,6 +115,7 @@ df.resale.registered.2017topresent$remaining_lease <- as.integer(str_extract(df.
 ```
 
 Combine all the data frames as one data frame.
+
 ```{r, include=F}
 #install.packages("dplyr")
 library(dplyr)  # to use bind_rows
@@ -120,6 +125,7 @@ data <- bind_rows(df.resale.approved.1990to1999, df.resale.approved.2000to2012, 
 ```
 
 Convert month to date type.
+
 ```{r, include=F}
 #install.packages("zoo")
 library(zoo)  # to use as.yearmon()
@@ -129,6 +135,7 @@ data$month <- as.Date(as.yearmon(data$month)) # using zoo package
 ```
 
 Calculate the value of remaining lease for all combined rows and convert numeric to integer.
+
 ```{r, include=F}
 data %>%
   mutate(remaining_lease = 99-(as.numeric(format(month,'%Y'))-lease_commence_date)) -> 
@@ -139,6 +146,7 @@ data %>%
 ```
 
 Checking unique values.
+
 ```{r, include=F}
 # check for unique variable values
 unique(data$flat_type)
@@ -153,6 +161,7 @@ data$flat_type <- gsub("MULTI GENERATION", "MULTI-GENERATION", data$flat_type)
 ```
 
 Calculate the floor area in sqf and the dollar per sqf.
+
 ```{r, include=F}
 # calculate floor area in sqf
 data$floor_area_sqf <- round(data$floor_area_sqm * 10.764)
@@ -163,10 +172,13 @@ data %>%
 ```
 
 Overview of the clean data:
+
 ``` {r head.ten, echo=F}
 str(data)
 ```
+
 Output:
+
 ```{plaintext}
 'data.frame':	920241 obs. of  11 variables:
  $ month              : chr  "1990-01" "1990-01" "1990-01" "1990-01" ...
@@ -183,7 +195,9 @@ Output:
 ```
 
 # Data Analysis
+
 Aggregating data and assigned to new data frame
+
 ``` {r data.processing.general.line.plot, echo=F}
 # create a new data frame and aggregrate on the date to get the average psf
 psf_df <- data %>%
@@ -192,6 +206,7 @@ psf_df <- data %>%
 ```
 
 Line plot showing average price psf annually
+
 ``` {r general.line.plot.psf, echo=F}
 ##### line plot average price psf per year #####
 #install.packages("ggplot2")
@@ -238,9 +253,11 @@ ggplot(psf_df, aes(x = month,
 ```
 
 Output:
+
 ![line plot showing average price psf annually](assets/img/line_plot.png)
 
 Filter data for specific period of time.
+
 ``` {r data.processing.post.AFC.GFC, echo=F}
 ##### data processing for line plot post AFC 1997 Q3 - 2008 Q4 #####
 # create a quarter variable
@@ -267,10 +284,10 @@ txn_volume_df <- data %>%
 
 txn_volume_post_afc_df <- subset(txn_volume_df, 
                         year >= 1997 & year <= 2008)
-
 ```
 
 Combine line plot and bar chart showing transaction volume and price psf post AFC.
+
 ``` {r plot.post.AFC, echo=F}
 ##### line plot for post AFC #####
 #install.packages("tidyverse)
@@ -358,9 +375,11 @@ combined_afc_psf_plots
 ```
 
 Output:
+
 ![Combined bar chart and line plot](assets/img/combine_line_bar.png)
 
 Filter data for another period of time.
+
 ``` {r plot.post.GFC, echo=F}
 # Data engineer for line plot post GFC 2007 Q1 - 2012 Q4
 # filter data from 2007 Q1 - 2012 Q4
@@ -376,7 +395,9 @@ post_gfc_psf_df <- post_gfc_df %>%
 txn_volume_post_gfc_df <- subset(txn_volume_df, 
                         year >= 2007 & year <= 2012)
 ```
+
 Combine line plot and bar chart showing transaction volume and price psf post GFC.
+
 ```{r, echo=F}
 # plot average_dollar_psf for 2007 Q1 - 2012 Q4 and assign to post_gfc_psf_plot to combine with other plot
 post_gfc_psf_plot <- ggplot(post_gfc_psf_df, 
@@ -443,9 +464,11 @@ combined_gfc_psf_plots
 ```
 
 Output:
+
 ![Combined bar chart and line plot](assets/img/combine_line_bar_2.png)
 
 Filter data for another period of time
+
 ```{r after.2012, echo=F}
 ##### line plot for 2012-2023 #####
 # Data engineer for line plot post from 2012-2023
@@ -464,6 +487,7 @@ txn_volume_after2012_df <- subset(txn_volume_df,
 ```
 
 Combine line plot and bar chart showing transaction volume and price psf post cooling measures.
+
 ```{r, echo=F}
 # create a new data frame and aggregrate by date
 # to get the average psf for 2012-2023
@@ -520,9 +544,11 @@ combined_after2012_plots
 ```
 
 Output:
+
 ![Combined bar chart and line plot](assets/img/combine_line_bar_3.png)
 
 Filter data based on flat type
+
 ``` {r plot.post.covid, echo=F}
 ##### data processing for the line plot from 2020-present #####
 # filter data from 2020-present
@@ -542,7 +568,6 @@ post_covid_df <- data %>%
 txn_volume_post_covid_df <- subset(post_covid_df, 
                         month >= "2020-01-01" & month <= "2023-12-31")
 ```
-
 
 ```{r, echo=F}
 ##### line plot for post covid #####
@@ -594,6 +619,7 @@ combined_covid_psf_plots
 ```
 
 Output:
+
 ![Combined bar chart and line plot](assets/img/combine_line_bar_4.png)
 
 Next, scatter plots of average price psf per remaining lease year of a flat will be shown to find out the depreciation rate of Singapore resale HDB, especially for 3-room, 4-room and 5-room flats.
@@ -623,6 +649,8 @@ age_5room_df <- data %>%
   group_by(remaining_lease) %>% 
   summarise(average_dollar_psf = mean(dollar_psf))
 ```
+
+Scatter Plot:
 
 ``` {r age.plot.show.code, echo=T}
 ##### 3-ROOM scatter plot #####
@@ -675,6 +703,7 @@ ggplot(age_5room_df,
 ```
 
 Output:
+
 ![3-room](assets/img/3-room.png) |   ![4-room](assets/img/4-room.png) |   ![5-room](assets/img/5-room.png)
 
 The Bala's Curve method stands out as a widely adopted approach for assessing leasehold value. This methodology states that depreciation intensifying as the lease approaches its conclusion. The presented scatter plots depict transactions for 3-room, 4-room and 5-room flats across different age groups. The rest of the flat types are not included due to insufficient transactions during the filtered year duration, making it insignificant to the analysis. The observed polynomial trend line exhibits a pattern resembling a linear to inverted U curve. This implies that the rate of price reduction remains consistent or decelerates as the property ages, in contrast to the accelerating inverted U shape observed in Bala's Curve.
@@ -706,11 +735,13 @@ ggplot(data, aes(x = month,
 ```
 
 Output:
+
 ![Average Price](assets/img/avg_price.png)
 
 The average resale price of the multi-generation flat is more volatile. This could be due to small amount of transaction for this type of flat.
 
 Filter data by flat type.
+
 ``` {r data.processing.txn.vol, echo=T}
 flat_type_df <- data %>% 
   group_by(flat_type) %>% 
@@ -718,6 +749,7 @@ flat_type_df <- data %>%
 ```
 
 Plot the transaction volume for each flat type from 1990 onwards.
+
 ``` {r txn.vol.bar.chart, echo=F}
 ggplot(flat_type_df,
        aes(fill = flat_type,
@@ -738,11 +770,13 @@ ggplot(flat_type_df,
 ```
 
 Output:
+
 ![Txn Vol](assets/img/txn_vol.png)
 
 The number of transaction for "MULTI-GENERATION" flat type is only 542 from 1990 to present, shown by the bar chart above. The bar chart also shows that 4-room flat is the most transacted.
 
 Next, boxplot will be used to see the relationship between the resale prices and flat type.
+
 ```{r flat.model.resale.price.boxplot, echo=T}
 # filter data from 2023 Q1 - 2024 Q1
 flat_model_df <- data %>% 
@@ -765,6 +799,7 @@ ggplot(flat_model_df, aes(x = flat_type, y = resale_price)) +
 ```
 
 Output:
+
 ![Boxplot](assets/img/boxplot.png)
 
 From the boxplot, there are many outliers for all the flat types. This shows that the same flat type can vary in resale price based on location and floor area. 
@@ -781,6 +816,7 @@ ggplot(flat_model_df, aes(x = floor_area_sqm, y = resale_price)) +
 ```
 
 Output:
+
 ![Scatter](assets/img/scatter.png)
 
 Next, map plot will be used to show how price psf varies for different areas in Singapore from 2020 onwards.
@@ -794,6 +830,7 @@ Data processing steps taken:
   * create a new variable called "color_to_plot" to categorize prices into 3. If the average price psf is more than equal to 600, it will be set as red, If the average price psf is more than equal to 500, it will be set as green, If the average price psf is more than equal to 400, it will be set as yellow.
 
 Data Processing:
+
 ``` {r data.processing.map.leaflet.plot, echo=F}
 # Filter year from the main data
 map_data_df <- subset(data, month > "2020-01-01")
@@ -834,6 +871,7 @@ town_price_psf_df$color_to_plot <- ifelse(town_price_psf_df$average_dollar_psf >
 ```
 
 Leaflet code snippet:
+
 ``` {r map.leaflet.plot, echo=F}
 #install.packages("leaflet")
 library(leaflet)
@@ -845,6 +883,7 @@ leaflet(town_price_psf_df) %>%
 ```
 
 Output:
+
 ![Leaflet](assets/img/leaflet.jpg)
 
 The map plot above is illustrated using leaflet package. The addProviderTiles(providers$OpenStreetMap) is used to show the Singapore map. The addCircleMarkers() is used to show the colored circles on each town. The average price psf will be shown when clicking on the colored circles. From the map plot, it is observed that the areas on the edges have lower average price psf shown by yellow circles. The average price psf increase as the circles move into the centre of Singapore. The areas with red circles have highest average price psf. Therefore, location is prime factor for estimating average price psf.
