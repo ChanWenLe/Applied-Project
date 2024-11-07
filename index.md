@@ -105,7 +105,7 @@ Following are the data cleaning steps in order:
 
 Convert variables to the correct data types.
 
-```{r data.cleaning, include=F}
+```{r}
 #install.packages("stringr")
 library(stringr)  # to use str_extract()
 
@@ -116,7 +116,7 @@ df.resale.registered.2017topresent$remaining_lease <- as.integer(str_extract(df.
 
 Combine all the data frames as one data frame.
 
-```{r, include=F}
+```{r}
 #install.packages("dplyr")
 library(dplyr)  # to use bind_rows
 
@@ -126,7 +126,7 @@ data <- bind_rows(df.resale.approved.1990to1999, df.resale.approved.2000to2012, 
 
 Convert month to date type.
 
-```{r, include=F}
+```{r}
 #install.packages("zoo")
 library(zoo)  # to use as.yearmon()
 
@@ -136,7 +136,7 @@ data$month <- as.Date(as.yearmon(data$month)) # using zoo package
 
 Calculate the value of remaining lease for all combined rows and convert numeric to integer.
 
-```{r, include=F}
+```{r}
 data %>%
   mutate(remaining_lease = 99-(as.numeric(format(month,'%Y'))-lease_commence_date)) -> 
   data
@@ -147,7 +147,7 @@ data %>%
 
 Checking unique values.
 
-```{r, include=F}
+```{r}
 # check for unique variable values
 unique(data$flat_type)
 unique(data$town)
@@ -162,7 +162,7 @@ data$flat_type <- gsub("MULTI GENERATION", "MULTI-GENERATION", data$flat_type)
 
 Calculate the floor area in sqf and the dollar per sqf.
 
-```{r, include=F}
+```{r}
 # calculate floor area in sqf
 data$floor_area_sqf <- round(data$floor_area_sqm * 10.764)
 
@@ -173,7 +173,7 @@ data %>%
 
 Overview of the clean data:
 
-``` {r head.ten, echo=F}
+``` {r}
 str(data)
 ```
 
@@ -198,7 +198,7 @@ Output:
 
 Aggregating data and assigned to new data frame
 
-``` {r data.processing.general.line.plot, echo=F}
+``` {r}
 # create a new data frame and aggregrate on the date to get the average psf
 psf_df <- data %>%
   group_by(month) %>%
@@ -207,7 +207,7 @@ psf_df <- data %>%
 
 Line plot showing average price psf annually
 
-``` {r general.line.plot.psf, echo=F}
+``` {r}
 ##### line plot average price psf per year #####
 #install.packages("ggplot2")
 library(ggplot2)
@@ -258,7 +258,7 @@ Output:
 
 Filter data for specific period of time.
 
-``` {r data.processing.post.AFC.GFC, echo=F}
+``` {r}
 ##### data processing for line plot post AFC 1997 Q3 - 2008 Q4 #####
 # create a quarter variable
 data$quarter <- as.yearqtr(data$month)
@@ -288,7 +288,7 @@ txn_volume_post_afc_df <- subset(txn_volume_df,
 
 Combine line plot and bar chart showing transaction volume and price psf post AFC.
 
-``` {r plot.post.AFC, echo=F}
+``` {r}
 ##### line plot for post AFC #####
 #install.packages("tidyverse)
 library(tidyverse) # for data manipulation
@@ -380,7 +380,7 @@ Output:
 
 Filter data for another period of time.
 
-``` {r plot.post.GFC, echo=F}
+``` {r}
 # Data engineer for line plot post GFC 2007 Q1 - 2012 Q4
 # filter data from 2007 Q1 - 2012 Q4
 post_gfc_df <- data[data$quarter >= "2007 Q1" & data$quarter <= "2012 Q4", ]
@@ -398,7 +398,7 @@ txn_volume_post_gfc_df <- subset(txn_volume_df,
 
 Combine line plot and bar chart showing transaction volume and price psf post GFC.
 
-```{r, echo=F}
+```{r}
 # plot average_dollar_psf for 2007 Q1 - 2012 Q4 and assign to post_gfc_psf_plot to combine with other plot
 post_gfc_psf_plot <- ggplot(post_gfc_psf_df, 
                             aes(x = month, 
@@ -469,7 +469,7 @@ Output:
 
 Filter data for another period of time
 
-```{r after.2012, echo=F}
+```{r}
 ##### line plot for 2012-2023 #####
 # Data engineer for line plot post from 2012-2023
 # filter data from 2012 Q1 - 2023 Q4
@@ -488,7 +488,7 @@ txn_volume_after2012_df <- subset(txn_volume_df,
 
 Combine line plot and bar chart showing transaction volume and price psf post cooling measures.
 
-```{r, echo=F}
+```{r}
 # create a new data frame and aggregrate by date
 # to get the average psf for 2012-2023
 after_2012_psf_df <- after_2012_df %>%
@@ -549,7 +549,7 @@ Output:
 
 Filter data based on flat type
 
-``` {r plot.post.covid, echo=F}
+``` {r}
 ##### data processing for the line plot from 2020-present #####
 # filter data from 2020-present
 post_covid_df <- data[data$quarter >= "2020 Q1" & data$quarter <= "2023 Q4", ]
@@ -569,7 +569,7 @@ txn_volume_post_covid_df <- subset(post_covid_df,
                         month >= "2020-01-01" & month <= "2023-12-31")
 ```
 
-```{r, echo=F}
+```{r}
 ##### line plot for post covid #####
 # assign the ggplot to post_covid_psf_plot so it can be combined with other plot later on
 post_covid_psf_plot <- ggplot(post_covid_psf_df, aes(x = month, y = average_dollar_psf)) +
@@ -628,7 +628,7 @@ Following is the list of data processing before plotting:
 
   * New data frames will be created to filter different types of flat for year 2019-2023. The average price psf of these flats are grouped by remaining_lease and computed using mean(). They are assigned to age_3room_df, age_4room_df and age_5room_df. See below for the snippet of code.
 
-``` {r data.process.age.plot, echo=T}
+``` {r}
 ##### Data Processing #####
 # Filter out the flat type and the data in the last 5 years
 age_3room_df <- data %>% 
@@ -652,7 +652,7 @@ age_5room_df <- data %>%
 
 Scatter Plot:
 
-``` {r age.plot.show.code, echo=T}
+``` {r}
 ##### 3-ROOM scatter plot #####
 ggplot(age_3room_df, 
        aes(x = remaining_lease, 
@@ -710,7 +710,7 @@ The Bala's Curve method stands out as a widely adopted approach for assessing le
 
 Next, line plot will be used to see the average resale price trend of different flat types from 1990 to present.
 
-``` {r general.line.plot.2, echo=F}
+``` {r}
 # Relationship Between Average Resale Prices and Flat Model
 ggplot(data, aes(x = month, 
                  y = resale_price, 
@@ -742,7 +742,7 @@ The average resale price of the multi-generation flat is more volatile. This cou
 
 Filter data by flat type.
 
-``` {r data.processing.txn.vol, echo=T}
+``` {r}
 flat_type_df <- data %>% 
   group_by(flat_type) %>% 
   summarise(num_txn = n())
@@ -750,7 +750,7 @@ flat_type_df <- data %>%
 
 Plot the transaction volume for each flat type from 1990 onwards.
 
-``` {r txn.vol.bar.chart, echo=F}
+``` {r}
 ggplot(flat_type_df,
        aes(fill = flat_type,
            x = flat_type,
@@ -777,7 +777,7 @@ The number of transaction for "MULTI-GENERATION" flat type is only 542 from 1990
 
 Next, boxplot will be used to see the relationship between the resale prices and flat type.
 
-```{r flat.model.resale.price.boxplot, echo=T}
+```{r}
 # filter data from 2023 Q1 - 2024 Q1
 flat_model_df <- data %>% 
   filter(format(month, "%Y") %in% c("2023", "2024")) %>%
@@ -806,7 +806,7 @@ From the boxplot, there are many outliers for all the flat types. This shows tha
 
 Next, using the same flat_model_df, the scatter plot below, illustrated using geom_point(), proves that the same floor area can have various resale prices. This could be due to difference in location. Some locations could have higher resale price than the others.
 
-```{r floor.size.resale.price, echo=F}
+```{r}
 ggplot(flat_model_df, aes(x = floor_area_sqm, y = resale_price)) +
   geom_point(color = "blue") +
   labs(title = "Scatter Plot: Resale Prices vs. Floor Area\nFrom 2023-Present",
@@ -831,7 +831,7 @@ Data processing steps taken:
 
 Data Processing:
 
-``` {r data.processing.map.leaflet.plot, echo=F}
+``` {r}
 # Filter year from the main data
 map_data_df <- subset(data, month > "2020-01-01")
 
@@ -872,7 +872,7 @@ town_price_psf_df$color_to_plot <- ifelse(town_price_psf_df$average_dollar_psf >
 
 Leaflet code snippet:
 
-``` {r map.leaflet.plot, echo=F}
+``` {r}
 #install.packages("leaflet")
 library(leaflet)
 
